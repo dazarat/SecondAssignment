@@ -1,0 +1,46 @@
+{ "fine" :
+        [
+        {
+          "date_time" : "2010-05-05 15:39:03",
+          "first_name": "Ivan",
+          "last_name": "Ivanov",
+          "type": "SPEEDING",
+          "fine_amount": 340.00
+        },
+        {
+            "date_time" : "2012-06-06 15:39:03",
+            "first_name": "Serg",
+            "last_name": "Kraves",
+            "type": "SPEEDING",
+            "fine_amount": 280.00
+        },
+        {
+          "date_time" : "2020-04-05 15:39:03",
+          "first_name": "Oleg",
+          "last_name": "Smirnov",
+          "type": "PARKING_RULES_VIOLATION",
+          "fine_amount": 110.00
+        },
+        {
+          "date_time" : "2014-06-09 15:39:03",
+          "first_name": "Katya",
+          "last_name": "Ivanova",
+          "type": "ROAD_ACCIDENT",
+          "fine_amount": 550.00
+        },
+        {
+          "date_time" : "2020-12-07 15:39:03",
+          "first_name": "Vlad",
+          "last_name": "Dazarov",
+          "type": "DRIVING_WITHOUT_LICENSE",
+          "fine_amount": 220.00
+        },
+        {
+          "date_time" : "2011-17-12 15:39:03",
+          "first_name": "Myroslav",
+          "last_name": "Stepnoy",
+          "type": "DANGEROUS_DRIVING",
+          "fine_amount": 360.00
+        }
+        ]
+}

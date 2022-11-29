@@ -1,0 +1,53 @@
+{ "fine" :
+[
+  {
+    "date_time" : "2010-05-05 15:39:03",
+    "first_name": "Stas",
+    "last_name": "Gyra",
+    "type": "SPEEDING",
+    "fine_amount": 320.00
+  },
+  {
+    "date_time" : "2012-06-06 15:39:03",
+    "first_name": "Tolik",
+    "last_name": "Krasava",
+    "type": "PARKING_RULES_VIOLATION",
+    "fine_amount": 100.00
+  },
+  {
+    "date_time" : "2020-04-05 15:39:03",
+    "first_name": "Nastya",
+    "last_name": "Simonova",
+    "type": "PARKING_RULES_VIOLATION",
+    "fine_amount": 115.00
+  },
+  {
+    "date_time" : "2014-06-09 15:39:03",
+    "first_name": "Lubov",
+    "last_name": "Stepanova",
+    "type": "DRIVING_WITHOUT_LICENSE",
+    "fine_amount": 250.00
+  },
+  {
+    "date_time" : "2020-12-07 15:39:03",
+    "first_name": "Nazar",
+    "last_name": "Domovoy",
+    "type": "SEAT_BELT_UNPLUGGED",
+    "fine_amount": 150.00
+  },
+  {
+    "date_time" : "2011-17-12 15:39:03",
+    "first_name": "Stepan",
+    "last_name": "Forsage",
+    "type": "DANGEROUS_DRIVING",
+    "fine_amount": 650.00
+  },
+  {
+    "date_time" : "2012-06-07 15:39:03",
+    "first_name": "Tolik",
+    "last_name": "Krasava",
+    "type": "SEAT_BELT_UNPLUGGED",
+    "fine_amount": 150.00
+  }
+]
+}

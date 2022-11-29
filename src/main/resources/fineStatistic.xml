@@ -1,0 +1,26 @@
+<ViolationStatistics>
+  <item>
+    <violationType>DANGEROUS_DRIVING</violationType>
+    <fineAmount>1010.0</fineAmount>
+  </item>
+  <item>
+    <violationType>SPEEDING</violationType>
+    <fineAmount>940.0</fineAmount>
+  </item>
+  <item>
+    <violationType>ROAD_ACCIDENT</violationType>
+    <fineAmount>550.0</fineAmount>
+  </item>
+  <item>
+    <violationType>DRIVING_WITHOUT_LICENSE</violationType>
+    <fineAmount>470.0</fineAmount>
+  </item>
+  <item>
+    <violationType>PARKING_RULES_VIOLATION</violationType>
+    <fineAmount>325.0</fineAmount>
+  </item>
+  <item>
+    <violationType>SEAT_BELT_UNPLUGGED</violationType>
+    <fineAmount>300.0</fineAmount>
+  </item>
+</ViolationStatistics>
