@@ -22,8 +22,35 @@ public class PersonParser {
     private static final String REGEX_FOR_TAG_PERSON = "[ \\n]*<person[\\S \\n]*\\/>[ \\n]*";
     private static final String REGEX_FOR_PERSON = "[ \\n]*<person[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\/>";
     private static final String SURNAME_REGEX = "\\bsurname *= *\"(.*?)\" ?";
+    private static final String NAME_REGEX = "\\bname *= *\"(.*?)\" ?";
     private static final String ONLY_NAME_OR_SURNAME_REGEX = "[а-яА-ЯіІїЇЄє]+";
 
+
+    private static String replacingNameSurname(Pattern surnamePattern, Pattern onlyNameOrSurPattern, String person){
+        //finds surname="..." inside <person../person>
+        Matcher surnMatcher = surnamePattern.matcher(person);
+        surnMatcher.find();
+        String surnameWithValue = surnMatcher.group();
+
+        //finds surname value from result above (Шевченко)
+        Matcher onlyNameOrSurMatcher = onlyNameOrSurPattern.matcher(surnameWithValue);
+        onlyNameOrSurMatcher.find();
+
+        //saving surname value into variable
+        String surname = onlyNameOrSurMatcher.group();
+
+        //removes attribute surname with value from tag person
+        String lineWithoutSurname = surnMatcher.replaceAll("");
+
+        //finds name value from tag person (it finds cyrillic symbols, surname already removed, it finds name only) (Тарас)
+        onlyNameOrSurMatcher = onlyNameOrSurPattern.matcher(lineWithoutSurname);
+        onlyNameOrSurMatcher.find();
+
+        //saving name value into variable
+        String name = onlyNameOrSurMatcher.group();
+        //returns string with written to attribute name new value, new value is "name surname" (Тарас Шевченко)
+        return onlyNameOrSurMatcher.replaceAll(name + " " + surname);
+    }
 
     /**
      * Replaces attribute surname from tag <person.../person>, writes surname value into attribute name, saves input formatting
@@ -33,8 +60,6 @@ public class PersonParser {
      */
     private static String findAndReplaceNameAndSurname(String personTag) {
 
-        String name = "";
-        String surname = "";
         StringBuilder builder = new StringBuilder();
 
         //compiling patterns here, in order to do it before while loop
@@ -42,51 +67,32 @@ public class PersonParser {
         Pattern surnamePattern = Pattern.compile(SURNAME_REGEX);
         Pattern onlyNameOrSurnamePattern = Pattern.compile(ONLY_NAME_OR_SURNAME_REGEX);
         Pattern patternPersonTag = Pattern.compile(REGEX_FOR_TAG_PERSON);
-
+        Pattern namePattern = Pattern.compile(NAME_REGEX);
 
         //Matchers for patterns above
-        Matcher matcherPersonTag = patternPersonTag.matcher(personTag);
-        Matcher matcherForPersonCheck = regexForPerson.matcher(personTag);
-
         Matcher matcherForPerson = regexForPerson.matcher(personTag);
         Matcher surnameMatcher;
-        Matcher onlyNameOrSurnameMatcher;
+        Matcher matcherPersonTag = patternPersonTag.matcher(personTag);
+        Matcher nameMatcher;
+        Matcher matcherForPersonCheck = regexForPerson.matcher(personTag);
 
+        // check if tag has not all the attributes
         if (matcherPersonTag.matches() && !matcherForPersonCheck.matches()){
+            surnameMatcher = surnamePattern.matcher(personTag);
+            nameMatcher = namePattern.matcher(personTag);
+            //check if tag has attributes name and surname
+            if (nameMatcher.find() && surnameMatcher.find()){
+                return replacingNameSurname(surnamePattern, onlyNameOrSurnamePattern, personTag);
+            }
             return personTag;
         }
 
+        //processing tag with all attributes
         while (matcherForPerson.find()) {
-
             String onePerson = matcherForPerson.group();
-
-            //finds surname="..." inside <person../person>
-            surnameMatcher = surnamePattern.matcher(onePerson);
-            surnameMatcher.find();
-            String surnameWithValue = surnameMatcher.group();
-
-            //finds surname value from result above (Шевченко)
-            onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(surnameWithValue);
-            onlyNameOrSurnameMatcher.find();
-
-            //saving surname value into variable
-            surname = onlyNameOrSurnameMatcher.group();
-
-            //removes attribute surname with value from tag person
-            String lineWithoutSurname = surnameMatcher.replaceAll("");
-
-            //finds name value from tag person (it finds cyrillic symbols, surname already removed, it finds name only) (Тарас)
-            onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(lineWithoutSurname);
-            onlyNameOrSurnameMatcher.find();
-
-            //saving name value into variable
-            name = onlyNameOrSurnameMatcher.group();
-
-            //writes to attribute name new value, new value is "name surname" (Тарас Шевченко)
-            builder.append(onlyNameOrSurnameMatcher.replaceAll(name + " " + surname));
+            builder.append(replacingNameSurname(surnamePattern, onlyNameOrSurnamePattern, onePerson));
         }
-
-        //returns new and ready to write string with input formatting +++++++++++++++
+        //returns new and ready to write string with input formatting
         return builder.toString();
     }
 
