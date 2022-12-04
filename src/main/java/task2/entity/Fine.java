@@ -47,20 +47,15 @@ public class Fine {
     }
 
     //method to get Fine object from JSON string
-    public static Fine fromJson (ObjectMapper objectMapper, String jsonString, boolean readFullFineInfo) throws JsonProcessingException, ParseException {
+    public static Fine fromJson (ObjectMapper objectMapper, String jsonString) throws JsonProcessingException, ParseException {
         JsonNode jsonNode = objectMapper.readTree(jsonString);
 
         String type = jsonNode.get("type").asText();
         String fineAmount = jsonNode.get("fine_amount").asText();
-
-        if (readFullFineInfo){
-            String name = jsonNode.get("first_name").asText();
-            String lastName = jsonNode.get("last_name").asText();
-            String date = jsonNode.get("date_time").asText();
+        String name = jsonNode.get("first_name").asText();
+        String lastName = jsonNode.get("last_name").asText();
+        String date = jsonNode.get("date_time").asText();
             return new Fine(name, lastName, DATE_FORMAT.parse(date), DrivingViolationType.valueOf(type), Double.parseDouble(fineAmount));
-        }
-
-        return new Fine(DrivingViolationType.valueOf(type), Double.parseDouble(fineAmount));
     }
 
     public DrivingViolationType getViolationType() {
@@ -93,6 +88,10 @@ public class Fine {
 
     @Override
     public String toString() {
-        return name + " " + lastName + " GOT :" + violationType + " fine, sum is = " + fineAmount + ", date of violation: " + DATE_FORMAT.format(date);
+        if (name==null || lastName==null || date == null){
+            return violationType + " fine, sum is = " + fineAmount;
+        } else {
+            return name + " " + lastName + " GOT :" + violationType + " fine, sum is = " + fineAmount + ", date of violation: " + DATE_FORMAT.format(date);
+        }
     }
 }

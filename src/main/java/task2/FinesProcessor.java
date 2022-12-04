@@ -35,35 +35,24 @@ public class FinesProcessor {
         XML_MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-
     //returns all files in folder
     private static List<File> getFilesListFromFolder(final File folder) {
         ArrayList<File> filesInFolder = new ArrayList<>();
-        try {
-            for (final File fileEntry : folder.listFiles()) {
 
-                if (fileEntry.isDirectory()) {
-                    getFilesListFromFolder(fileEntry);
-                }
-                else {
-                    filesInFolder.add(new File(folder.getPath() + "\\" + fileEntry.getName()));
-                }
+        for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
 
+            if (fileEntry.isDirectory()) {
+                getFilesListFromFolder(fileEntry);
+            } else {
+                filesInFolder.add(new File(folder.getPath() + "\\" + fileEntry.getName()));
             }
-            return filesInFolder;
-
-        } catch (NullPointerException nullPointerException) {
-            nullPointerException.printStackTrace();
-            System.out.println("Folder is empty!");
         }
         return filesInFolder;
     }
 
-    //returns list with all fines from single file
-    //boolean variable is used to choose option: read full fine info including fields that aren't used in counting stat. or read only violation type and fine amount
-    //reading only violation type and fine amount can save memory while working with big amount of fines
-    private static List<Fine> getFineListFromFile(File file, boolean readFullFineInfo){
-        List<Fine> resultList = new ArrayList<>();
+    //returns map with statistic from file
+    private static Map<DrivingViolationType, Double> getStatisticFromFile(File file) throws IOException{
+        Map<DrivingViolationType, Double> resultMap = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file))))
         {
@@ -77,60 +66,62 @@ public class FinesProcessor {
                 if (jsonFineMatcher.find()){
 
                     String jsonFineString = jsonFineMatcher.group();
-                    resultList.add(Fine.fromJson(OBJECT_MAPPER_DEFAULT, jsonFineString, readFullFineInfo));
+
+                    Fine currentFine = Fine.fromJson(OBJECT_MAPPER_DEFAULT, jsonFineString);
+
+                    if (!resultMap.containsKey(currentFine.getViolationType()))
+                        resultMap.put(currentFine.getViolationType(), currentFine.getFineAmount());
+                    else
+                        resultMap.put(currentFine.getViolationType(), resultMap.get(currentFine.getViolationType()) + currentFine.getFineAmount());
                     stringBuilder = new StringBuilder();
                 }
                 currentLine = reader.readLine();
             }
         } catch (IOException |ParseException exception){
-            exception.printStackTrace();
+            throw new IOException("problems with reading input file \n" + exception.getMessage());
         }
-        return resultList;
+        return resultMap;
     }
 
-    //returns list with all fines from every file in folder
-    //boolean variable is used to choose option: read full fine info including fields that aren't used in counting stat. or read only violation type and fine amount
-    //reading only violation type and fine amount can save memory while working with big amount of fines
-    private static List<Fine> getFineListFromFolder(List<File> files, boolean readFullFineInfo){
-        List<Fine> resultList = new ArrayList<>();
+    //returns map with statistic from files in folder
+    private static Map<DrivingViolationType, Double> getStatisticFromFolder(List<File> files) throws IOException{
+        Map<DrivingViolationType, Double> resultMap = new HashMap<>();
+        Map<DrivingViolationType, Double> currentFileStatMap;
+
         for (File file : files) {
-            resultList.addAll(getFineListFromFile(file, readFullFineInfo));
+            currentFileStatMap = getStatisticFromFile(file);
+            Iterator<Map.Entry<DrivingViolationType, Double>> mapIterator = currentFileStatMap.entrySet().iterator();
+            while (mapIterator.hasNext()){
+                Map.Entry<DrivingViolationType, Double> pair = mapIterator.next();
+
+                if (!resultMap.containsKey(pair.getKey()))
+                    resultMap.put(pair.getKey(), pair.getValue());
+                else
+                    resultMap.put(pair.getKey(), resultMap.get(pair.getKey()) + pair.getValue());
+
+                mapIterator.remove();
+            }
         }
-        return resultList;
-    }
 
-    //counting stat. using map where key = violationType, value = sum of fine amount by this violationType
-    private static Map<DrivingViolationType, Double> getMapWithTotalSumByEveryType(List<Fine> listWithFines){
 
-        Map<DrivingViolationType,Double> resultMap = new HashMap<>();
-
-        for (Fine currentFine : listWithFines){
-            if (!resultMap.containsKey(currentFine.getViolationType()))
-                resultMap.put(currentFine.getViolationType(), currentFine.getFineAmount());
-            else
-                resultMap.put(currentFine.getViolationType(), resultMap.get(currentFine.getViolationType()) + currentFine.getFineAmount());
-        }
         return resultMap;
     }
 
     //returns sorted list from map with stat. (some parsers do not serializing maps, but every parser can serialize list)
     private static List<Fine> getSortedListFromMap(Map<DrivingViolationType, Double> mapWithSummaryInfo){
         List<Fine> resultList = new ArrayList<>();
-
         Iterator<Map.Entry<DrivingViolationType, Double>> mapIterator = mapWithSummaryInfo.entrySet().iterator();
         while (mapIterator.hasNext()){
             Map.Entry<DrivingViolationType, Double> pair = mapIterator.next();
             resultList.add(new Fine( pair.getKey(), pair.getValue()));
             mapIterator.remove();
         }
-
         resultList.sort((fine1, fine2) -> (int)(fine2.getFineAmount() - fine1.getFineAmount()));
         return resultList;
     }
 
-
     //write stat. to XML-file using parser
-    private static void writeToXMLFileWithParser(String outputFilePath, List<Fine> listWithSums){
+    private static void writeToXMLFileWithParser(String outputFilePath, List<Fine> listWithSums) throws IOException{
 
             try (BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath)))) {
                 String xmlList = XML_MAPPER.writeValueAsString(listWithSums).replaceAll("ArrayList", "ViolationStatistics");;
@@ -138,20 +129,14 @@ public class FinesProcessor {
                 bufferedWriter.flush();
             } catch (IOException e) {
 
-                e.printStackTrace();
+                throw new IOException("trouble with writing output file \n" + e.getMessage());
             }
 
     }
 
     //main method to run the program
-    //boolean variable is used to choose option: read full fine info including fields that aren't used in counting stat. or read only violation type and fine amount
-    //reading only violation type and fine amount can save memory while working with big amount of fines
-    public static void getFinesStatistics(String inputFolderPath, String outputFilePath, boolean readFullFineInfo){
-
-            writeToXMLFileWithParser(outputFilePath, getSortedListFromMap(
-                    getMapWithTotalSumByEveryType(getFineListFromFolder(
-                            getFilesListFromFolder(new File(inputFolderPath)), readFullFineInfo))));
-
+    public static void getFinesStatistics(String inputFolderPath, String outputFilePath) throws IOException{
+            writeToXMLFileWithParser(outputFilePath, getSortedListFromMap(getStatisticFromFolder(getFilesListFromFolder(new File(inputFolderPath)))));
     }
 
 }

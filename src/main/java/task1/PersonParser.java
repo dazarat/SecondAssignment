@@ -19,6 +19,7 @@ public class PersonParser {
      * <code>SURNAME_REGEX</code> - pattern for attribute surname with value ( surname="..." )
      * <code>ONLY_NAME_OR_SURNAME_REGEX</code> - pattern for name/surname value ( Тарас )
      */
+    private static final String REGEX_FOR_TAG_PERSON = "[ \\n]*<person[\\S \\n]*\\/>[ \\n]*";
     private static final String REGEX_FOR_PERSON = "[ \\n]*<person[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\/>";
     private static final String SURNAME_REGEX = "\\bsurname *= *\"(.*?)\" ?";
     private static final String ONLY_NAME_OR_SURNAME_REGEX = "[а-яА-ЯіІїЇЄє]+";
@@ -40,11 +41,20 @@ public class PersonParser {
         Pattern regexForPerson = Pattern.compile(REGEX_FOR_PERSON);
         Pattern surnamePattern = Pattern.compile(SURNAME_REGEX);
         Pattern onlyNameOrSurnamePattern = Pattern.compile(ONLY_NAME_OR_SURNAME_REGEX);
+        Pattern patternPersonTag = Pattern.compile(REGEX_FOR_TAG_PERSON);
+
 
         //Matchers for patterns above
+        Matcher matcherPersonTag = patternPersonTag.matcher(personTag);
+        Matcher matcherForPersonCheck = regexForPerson.matcher(personTag);
+
         Matcher matcherForPerson = regexForPerson.matcher(personTag);
         Matcher surnameMatcher;
         Matcher onlyNameOrSurnameMatcher;
+
+        if (matcherPersonTag.matches() && !matcherForPersonCheck.matches()){
+            return personTag;
+        }
 
         while (matcherForPerson.find()) {
 
@@ -86,7 +96,7 @@ public class PersonParser {
      * @param inputFileName - input file path
      * @param outputFileName - output file path
      */
-    public static void processXMLFile(String inputFileName, String outputFileName) {
+    public static void processXMLFile(String inputFileName, String outputFileName) throws IOException{
         //initialising reader/writer using try-with-resources, no need to close it
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFileName));
              BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
@@ -95,6 +105,8 @@ public class PersonParser {
             StringBuilder builder = new StringBuilder();
             String currentLine = reader.readLine();
             builder.append(currentLine).append("\n");
+
+
 
             while (currentLine != null) {
 
@@ -106,7 +118,6 @@ public class PersonParser {
 
                     //if contains creates new string with first tag
                     String tag = builder.substring(0, builder.indexOf(">") + 1);
-
                     //if found start/end .xml file tag writing it to file saving the formatting
                     if (tag.contains("<persons>") || tag.contains("</persons>")) {
                         writer.write(tag);
@@ -128,9 +139,9 @@ public class PersonParser {
 
             //making sure writer finished writing output file
             writer.flush();
-        } catch (
-                IOException exception) {
-            exception.printStackTrace();
+        } catch (IOException exception) {
+
+            throw new IOException("problems with input/output file \n" + exception.getMessage());
         }
     }
 
