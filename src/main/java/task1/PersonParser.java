@@ -26,30 +26,30 @@ public class PersonParser {
     private static final String ONLY_NAME_OR_SURNAME_REGEX = "[а-яА-ЯіІїЇЄє]+";
 
 
-    private static String replacingNameSurname(Pattern surnamePattern, Pattern onlyNameOrSurPattern, String person){
+    private static String replacingNameSurname(Pattern surnamePattern, Pattern onlyNameOrSurnamePattern, String person){
         //finds surname="..." inside <person../person>
-        Matcher surnMatcher = surnamePattern.matcher(person);
-        surnMatcher.find();
-        String surnameWithValue = surnMatcher.group();
+        Matcher surnameMatcher = surnamePattern.matcher(person);
+        surnameMatcher.find();
+        String surnameWithValue = surnameMatcher.group();
 
         //finds surname value from result above (Шевченко)
-        Matcher onlyNameOrSurMatcher = onlyNameOrSurPattern.matcher(surnameWithValue);
-        onlyNameOrSurMatcher.find();
+        Matcher onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(surnameWithValue);
+        onlyNameOrSurnameMatcher.find();
 
         //saving surname value into variable
-        String surname = onlyNameOrSurMatcher.group();
+        String surname = onlyNameOrSurnameMatcher.group();
 
         //removes attribute surname with value from tag person
-        String lineWithoutSurname = surnMatcher.replaceAll("");
+        String lineWithoutSurname = surnameMatcher.replaceAll("");
 
         //finds name value from tag person (it finds cyrillic symbols, surname already removed, it finds name only) (Тарас)
-        onlyNameOrSurMatcher = onlyNameOrSurPattern.matcher(lineWithoutSurname);
-        onlyNameOrSurMatcher.find();
+        onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(lineWithoutSurname);
+        onlyNameOrSurnameMatcher.find();
 
         //saving name value into variable
-        String name = onlyNameOrSurMatcher.group();
+        String name = onlyNameOrSurnameMatcher.group();
         //returns string with written to attribute name new value, new value is "name surname" (Тарас Шевченко)
-        return onlyNameOrSurMatcher.replaceAll(name + " " + surname);
+        return onlyNameOrSurnameMatcher.replaceAll(name + " " + surname);
     }
 
     /**
