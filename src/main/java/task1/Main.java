@@ -8,7 +8,6 @@ public class Main {
     public static final  String OUTPUT = "src/main/resources/output.xml";
 
     public static void main(String[] args) throws IOException {
-
         PersonParser.processXMLFile(INPUT, OUTPUT);
     }
 }

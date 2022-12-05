@@ -23,10 +23,10 @@ public class PersonParser {
     private static final String REGEX_FOR_PERSON = "[ \\n]*<person[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\S*[ \\n]*=[ \\n]*\\S*[ \\n]*\\/>";
     private static final String SURNAME_REGEX = "\\bsurname *= *\"(.*?)\" ?";
     private static final String NAME_REGEX = "\\bname *= *\"(.*?)\" ?";
-    private static final String ONLY_NAME_OR_SURNAME_REGEX = "[а-яА-ЯіІїЇЄє]+";
+    private static final String ONLY_NAME_OR_SURNAME_REGEX = "\"[а-яА-ЯіІїЇЄєA-z]+\"";
 
 
-    private static String replacingNameSurname(Pattern surnamePattern, Pattern onlyNameOrSurnamePattern, String person){
+    private static String replacingNameSurname(Pattern surnamePattern, Pattern onlyNameOrSurnamePattern, Pattern namePattern, String person){
         //finds surname="..." inside <person../person>
         Matcher surnameMatcher = surnamePattern.matcher(person);
         surnameMatcher.find();
@@ -37,19 +37,28 @@ public class PersonParser {
         onlyNameOrSurnameMatcher.find();
 
         //saving surname value into variable
-        String surname = onlyNameOrSurnameMatcher.group();
+        String surname = onlyNameOrSurnameMatcher.group().replaceAll("\"","");
 
         //removes attribute surname with value from tag person
         String lineWithoutSurname = surnameMatcher.replaceAll("");
 
         //finds name value from tag person (it finds cyrillic symbols, surname already removed, it finds name only) (Тарас)
-        onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(lineWithoutSurname);
-        onlyNameOrSurnameMatcher.find();
+        Matcher nameMatcher = namePattern.matcher(lineWithoutSurname);
+        nameMatcher.find();
 
-        //saving name value into variable
-        String name = onlyNameOrSurnameMatcher.group();
+        //saving  into variable name + surname
+        String nameWithValue = nameMatcher.group();
+        onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(nameWithValue);
+        onlyNameOrSurnameMatcher.find();
+        String name = onlyNameOrSurnameMatcher.group().replaceAll("\"","") + " " + surname;
+
+
+        String fin = nameWithValue.replaceAll(ONLY_NAME_OR_SURNAME_REGEX, "\"" + name + "\"");
+
+        nameMatcher = namePattern.matcher(lineWithoutSurname);
+
         //returns string with written to attribute name new value, new value is "name surname" (Тарас Шевченко)
-        return onlyNameOrSurnameMatcher.replaceAll(name + " " + surname);
+        return nameMatcher.replaceAll(fin);
     }
 
     /**
@@ -82,7 +91,7 @@ public class PersonParser {
             nameMatcher = namePattern.matcher(personTag);
             //check if tag has attributes name and surname
             if (nameMatcher.find() && surnameMatcher.find()){
-                return replacingNameSurname(surnamePattern, onlyNameOrSurnamePattern, personTag);
+                return replacingNameSurname(surnamePattern, onlyNameOrSurnamePattern, namePattern, personTag);
             }
             return personTag;
         }
@@ -90,7 +99,7 @@ public class PersonParser {
         //processing tag with all attributes
         while (matcherForPerson.find()) {
             String onePerson = matcherForPerson.group();
-            builder.append(replacingNameSurname(surnamePattern, onlyNameOrSurnamePattern, onePerson));
+            builder.append(replacingNameSurname(surnamePattern, onlyNameOrSurnamePattern, namePattern, onePerson));
         }
         //returns new and ready to write string with input formatting
         return builder.toString();
@@ -152,4 +161,3 @@ public class PersonParser {
     }
 
 }
-

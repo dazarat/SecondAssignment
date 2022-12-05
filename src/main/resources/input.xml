@@ -1,10 +1,14 @@
 <persons><person  surname="Котляревський" birthDate="09.09.1769" /><person surname="Шевченко" name="Тарас" />
     <person
             birthData="27.08.1856"
-            name = "Іван"
-            surname = "Франко"
+            name = "alex"
+            surname = "прикол"
+            choch = "asdasd"
 
     />
     <person name="Леся"
+
+
+
             surname="Українка"
              /> </persons>
