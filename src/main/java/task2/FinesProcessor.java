@@ -6,14 +6,12 @@ import task2.entity.*;
 import java.io.*;
 import java.text.ParseException;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * this is main class, it has methods to read and parse .json files from input folder, methods to process parsed data, method to write .xml result file
  */
-
 public class FinesProcessor {
 
     //regex for JSON object
@@ -51,7 +49,7 @@ public class FinesProcessor {
     }
 
     //returns map with statistic from file
-    private static Map<DrivingViolationType, Double> getStatisticFromFile(File file) throws IOException{
+    private static Map<DrivingViolationType, Double> getStatisticFromFile(File file) {
         Map<DrivingViolationType, Double> resultMap = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file))))
@@ -78,13 +76,13 @@ public class FinesProcessor {
                 currentLine = reader.readLine();
             }
         } catch (IOException |ParseException exception){
-            throw new IOException("problems with reading input file \n" + exception.getMessage());
+            throw new RuntimeException(exception);
         }
         return resultMap;
     }
 
     //returns map with statistic from files in folder
-    private static Map<DrivingViolationType, Double> getStatisticFromFolder(List<File> files) throws IOException{
+    private static Map<DrivingViolationType, Double> getStatisticFromFolder(List<File> files) {
         Map<DrivingViolationType, Double> resultMap = new HashMap<>();
         Map<DrivingViolationType, Double> currentFileStatMap;
 
@@ -102,12 +100,10 @@ public class FinesProcessor {
                 mapIterator.remove();
             }
         }
-
-
         return resultMap;
     }
 
-    //returns sorted list from map with stat. (some parsers do not serializing maps, but every parser can serialize list)
+    //returns sorted list from map with stat. (some parsers do not serialize maps, but every parser can serialize list)
     private static List<Fine> getSortedListFromMap(Map<DrivingViolationType, Double> mapWithSummaryInfo){
         List<Fine> resultList = new ArrayList<>();
         Iterator<Map.Entry<DrivingViolationType, Double>> mapIterator = mapWithSummaryInfo.entrySet().iterator();
@@ -121,21 +117,20 @@ public class FinesProcessor {
     }
 
     //write stat. to XML-file using parser
-    private static void writeToXMLFileWithParser(String outputFilePath, List<Fine> listWithSums) throws IOException{
+    private static void writeToXMLFileWithParser(String outputFilePath, List<Fine> listWithSums) {
 
             try (BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath)))) {
-                String xmlList = XML_MAPPER.writeValueAsString(listWithSums).replaceAll("ArrayList", "ViolationStatistics");;
+                String xmlList = XML_MAPPER.writeValueAsString(listWithSums).replaceAll("ArrayList", "ViolationStatistics");
                 bufferedWriter.write(xmlList);
                 bufferedWriter.flush();
             } catch (IOException e) {
-
-                throw new IOException("trouble with writing output file \n" + e.getMessage());
+                throw new RuntimeException(e);
             }
 
     }
 
     //main method to run the program
-    public static void getFinesStatistics(String inputFolderPath, String outputFilePath) throws IOException{
+    public static void getFinesStatistics(String inputFolderPath, String outputFilePath) {
             writeToXMLFileWithParser(outputFilePath, getSortedListFromMap(getStatisticFromFolder(getFilesListFromFolder(new File(inputFolderPath)))));
     }
 

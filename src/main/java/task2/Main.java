@@ -5,8 +5,7 @@ import java.io.IOException;
 public class Main {
     public static final String INPUT = "src/main/resources/fineFileDirectory";
     public static final  String OUTPUT = "src/main/resources/fineStatistic.xml";
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         FinesProcessor.getFinesStatistics(INPUT, OUTPUT);
     }
 }

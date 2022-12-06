@@ -25,38 +25,28 @@ public class PersonParser {
     private static final String NAME_REGEX = "\\bname *= *\"(.*?)\" ?";
     private static final String ONLY_NAME_OR_SURNAME_REGEX = "\"[а-яА-ЯіІїЇЄєA-z]+\"";
 
-
     private static String replacingNameSurname(Pattern surnamePattern, Pattern onlyNameOrSurnamePattern, Pattern namePattern, String person){
         //finds surname="..." inside <person../person>
         Matcher surnameMatcher = surnamePattern.matcher(person);
         surnameMatcher.find();
         String surnameWithValue = surnameMatcher.group();
-
         //finds surname value from result above (Шевченко)
         Matcher onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(surnameWithValue);
         onlyNameOrSurnameMatcher.find();
-
         //saving surname value into variable
         String surname = onlyNameOrSurnameMatcher.group().replaceAll("\"","");
-
         //removes attribute surname with value from tag person
         String lineWithoutSurname = surnameMatcher.replaceAll("");
-
         //finds name value from tag person (it finds cyrillic symbols, surname already removed, it finds name only) (Тарас)
         Matcher nameMatcher = namePattern.matcher(lineWithoutSurname);
         nameMatcher.find();
-
         //saving  into variable name + surname
         String nameWithValue = nameMatcher.group();
         onlyNameOrSurnameMatcher = onlyNameOrSurnamePattern.matcher(nameWithValue);
         onlyNameOrSurnameMatcher.find();
         String name = onlyNameOrSurnameMatcher.group().replaceAll("\"","") + " " + surname;
-
-
         String fin = nameWithValue.replaceAll(ONLY_NAME_OR_SURNAME_REGEX, "\"" + name + "\"");
-
         nameMatcher = namePattern.matcher(lineWithoutSurname);
-
         //returns string with written to attribute name new value, new value is "name surname" (Тарас Шевченко)
         return nameMatcher.replaceAll(fin);
     }
@@ -70,21 +60,18 @@ public class PersonParser {
     private static String findAndReplaceNameAndSurname(String personTag) {
 
         StringBuilder builder = new StringBuilder();
-
         //compiling patterns here, in order to do it before while loop
         Pattern regexForPerson = Pattern.compile(REGEX_FOR_PERSON);
         Pattern surnamePattern = Pattern.compile(SURNAME_REGEX);
         Pattern onlyNameOrSurnamePattern = Pattern.compile(ONLY_NAME_OR_SURNAME_REGEX);
         Pattern patternPersonTag = Pattern.compile(REGEX_FOR_TAG_PERSON);
         Pattern namePattern = Pattern.compile(NAME_REGEX);
-
         //Matchers for patterns above
         Matcher matcherForPerson = regexForPerson.matcher(personTag);
         Matcher surnameMatcher;
         Matcher matcherPersonTag = patternPersonTag.matcher(personTag);
         Matcher nameMatcher;
         Matcher matcherForPersonCheck = regexForPerson.matcher(personTag);
-
         // check if tag has not all the attributes
         if (matcherPersonTag.matches() && !matcherForPersonCheck.matches()){
             surnameMatcher = surnamePattern.matcher(personTag);
@@ -95,7 +82,6 @@ public class PersonParser {
             }
             return personTag;
         }
-
         //processing tag with all attributes
         while (matcherForPerson.find()) {
             String onePerson = matcherForPerson.group();
@@ -111,33 +97,26 @@ public class PersonParser {
      * @param inputFileName - input file path
      * @param outputFileName - output file path
      */
-    public static void processXMLFile(String inputFileName, String outputFileName) throws IOException{
+    public static void processXMLFile(String inputFileName, String outputFileName){
         //initialising reader/writer using try-with-resources, no need to close it
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFileName));
              BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
-
             //builder to work with string from file
             StringBuilder builder = new StringBuilder();
             String currentLine = reader.readLine();
             builder.append(currentLine).append("\n");
 
-
-
             while (currentLine != null) {
-
                 //string with current builder value
                 String lineToProcess = builder.toString();
-
                 //looking for ">" in string
                 if (lineToProcess.contains(">")) {
-
                     //if contains creates new string with first tag
                     String tag = builder.substring(0, builder.indexOf(">") + 1);
                     //if found start/end .xml file tag writing it to file saving the formatting
                     if (tag.contains("<persons>") || tag.contains("</persons>")) {
                         writer.write(tag);
                     } else {
-
                         //if found <person.../person> tag - process it with method
                         String res = findAndReplaceNameAndSurname(tag);
                         //writes result into file saving input formatting
@@ -151,13 +130,10 @@ public class PersonParser {
                     builder.append(currentLine).append("\n");
                 }
             }
-
             //making sure writer finished writing output file
             writer.flush();
         } catch (IOException exception) {
-
-            throw new IOException("problems with input/output file \n" + exception.getMessage());
+            throw new RuntimeException(exception);
         }
     }
-
 }
