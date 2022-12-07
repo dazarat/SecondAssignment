@@ -1,12 +1,10 @@
 package task1;
 
-import java.io.IOException;
-
+import utils.PropertyReader;
+import java.util.Properties;
 public class Main {
-
-    public static final String INPUT = "src/main/resources/input.xml";
-    public static final  String OUTPUT = "src/main/resources/output.xml";
     public static void main(String[] args) {
-        PersonParser.processXMLFile(INPUT, OUTPUT);
+        Properties properties = PropertyReader.readProperties("src/main/resources/name.properties");
+        PersonParser.processXMLFile(properties.getProperty("task1.inputXml"), properties.getProperty("task1.outputXml"));
     }
 }

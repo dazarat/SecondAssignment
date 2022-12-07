@@ -25,6 +25,7 @@ public class PersonParser {
     private static final String NAME_REGEX = "\\bname *= *\"(.*?)\" ?";
     private static final String ONLY_NAME_OR_SURNAME_REGEX = "\"[а-яА-ЯіІїЇЄєA-z]+\"";
 
+    //process not default tag <person.../person>
     private static String replacingNameSurname(Pattern surnamePattern, Pattern onlyNameOrSurnamePattern, Pattern namePattern, String person){
         //finds surname="..." inside <person../person>
         Matcher surnameMatcher = surnamePattern.matcher(person);
@@ -52,7 +53,7 @@ public class PersonParser {
     }
 
     /**
-     * Replaces attribute surname from tag <person.../person>, writes surname value into attribute name, saves input formatting
+     * Replaces attribute surname from default tag <person.../person>, writes surname value into attribute name, saves input formatting
      *
      * @param personTag - full tag <person.../person> from input file
      * @return - reworked tag <person.../person> with input formatting

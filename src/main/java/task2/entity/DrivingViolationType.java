@@ -7,7 +7,6 @@ package task2.entity;
  * Program has to count fines total sum
  * For every driving violation type in input files
  */
-
 public enum DrivingViolationType {
     SPEEDING,
     VEHICLE_USAGE_VIOLATION,

@@ -1,11 +1,10 @@
 package task2;
 
-import java.io.IOException;
-
+import utils.PropertyReader;
+import java.util.Properties;
 public class Main {
-    public static final String INPUT = "src/main/resources/fineFileDirectory";
-    public static final  String OUTPUT = "src/main/resources/fineStatistic.xml";
     public static void main(String[] args) {
-        FinesProcessor.getFinesStatistics(INPUT, OUTPUT);
+        Properties properties = PropertyReader.readProperties("src/main/resources/name.properties");
+        FinesProcessor.getFinesStatistics(properties.getProperty("task2.inputFolder"), properties.getProperty("task2.outputXml"));
     }
 }
